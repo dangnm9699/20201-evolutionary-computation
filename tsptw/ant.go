@@ -31,6 +31,7 @@ func (ant *Ant) construct_route() {
 		ant.Position = next_node
 	}
 	if len(ant.Path) == NC {
+		updated = true
 		ant.update_local()
 		last_city := ant.Path[NC-1]
 		ant.Cost += DM[last_city][0]
@@ -38,7 +39,6 @@ func (ant *Ant) construct_route() {
 		// Update best
 		if ant.Time < BestTime {
 			log.Printf("Cost: %7.2f ; Time: %7.2f; Path: %v\n", ant.Cost, ant.Time, ant.Path)
-			is_updated = true
 			BestTime = ant.Time
 			BestCost = ant.Cost
 			BestTour = ant.Path
@@ -75,10 +75,11 @@ func (ant *Ant) next_node() int {
 			mean_H += H[i]
 		}
 	}
-	//log.Println(G)
 	if count_G > 0 {
 		mean_G /= float64(count_G)
 	} else {
+		//le := len(ant.Path) - 1
+		//P[le-1][le] *= 0.
 		return nex
 	}
 	if count_H >= 0 {
@@ -89,7 +90,7 @@ func (ant *Ant) next_node() int {
 		if G[i] >= 0 {
 			g[i] = 1.0 / (1.0 + math.Exp(delta*(G[i]-mean_G)))
 		} else {
-			g[i] = 0
+			g[i] = 0.0
 		}
 		if H[i] > 0 {
 			h[i] = 1.0 / (1.0 + math.Exp(lamda*(H[i]-mean_H)))
@@ -143,42 +144,4 @@ func (ant *Ant) update_local() {
 		P[cur][nex] = (1-omega)*P[cur][nex] +
 			omega*ant.Delta[cur][nex]
 	}
-}
-
-func new_ant() Ant {
-	return Ant{
-		Position:  0,
-		Path:      new_path(),
-		Cost:      0.0,
-		Time:      0.0,
-		Unvisited: new_unvisited(),
-		Delta:     new_delta(),
-	}
-}
-
-func new_delta() [][]float64 {
-	ma := make([][]float64, NC)
-	for i := 0; i < NC; i++ {
-		ma[i] = make([]float64, NC)
-		for j := 0; j < NC; j++ {
-			ma[i][j] = 1.0
-		}
-	}
-	return ma
-}
-
-func new_path() []int {
-	return []int{0}
-}
-
-func new_unvisited() []int {
-	u := make([]int, 0)
-	for i := 1; i < NC; i++ {
-		u = append(u, i)
-	}
-	return u
-}
-
-func remove_index(s []int, index int) []int {
-	return append(s[:index], s[index+1:]...)
 }
